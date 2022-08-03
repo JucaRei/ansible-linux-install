@@ -1,0 +1,40 @@
+---
+- hosts: all
+  # local system installation
+  # - hosts: localhost
+  # connection: local
+  connection: hosts
+  become: true # enable sudo
+  pre_tasks:
+    - name: pre-run | update package cache (arch)
+      tags: always
+      pacman:
+        update_cache: yes
+        update_only: yes
+      changed_when: False
+      # when: ansible_distribution == "Archlinux"
+      when: ansible_distribution in ["Archlinux", "ArtixLinux"]
+
+    - name: pre-run | update package cache (voidlinux)
+      tags: always
+      community.general.xbps:
+        update_cache: yes
+        update_only: yes
+      # install ansible-galaxy collection install community.general.xbps
+      changed_when: False
+      when: ansible_distribution == "void"
+
+    - name: pre-run | update package cache (debian, etc)
+      tags: always
+      # apt: update_cache=yes
+      apt:
+        update_cache: yes
+        update_only: yes
+      changed_when: False
+      when: ansible_distribution in ["Debian", "Ubuntu"]
+
+- hosts: all
+  become: true
+  roles:
+    - partition
+    - base

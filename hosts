@@ -1,0 +1,32 @@
+# SSH key setup, example
+# ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/Servers -C teste@mail.test
+# ssh-keygen -o -a 100 -t ed25519 -C "junior"
+
+# ssh key specific for ansible
+# ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/ansible -C ansible
+# eval $(ssh-agent)
+# ssh-add
+# alias ssha="eval $(ssh-agent) && ssh-add"
+
+# Copy ssh id to machine
+# ssh-copy-id -i ~/.ssh/dietpi 192.168.168.64.30
+
+# Config example for multiple
+
+# [Servers]
+# serverInstall ansible_host=192.168.64.30
+# ansible_user=admin
+# ansible_connection=ssh
+# ansible_ssh_private_key_file=/home/$USER/.ssh/Servers
+
+# Config for local install of Linux (Artix, Gentoo, etc)
+
+[localhost]
+localhost ansible_connection=local
+
+[Macs]
+192.168.1.222
+192.168.1.221
+
+[Nitro]
+192.168.1.35

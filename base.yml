@@ -1,0 +1,157 @@
+---
+- hosts: localhost # local system installation
+  connection: local
+  become: true # enable sudo
+  pre_tasks:
+    - name: pre-run | update package cache (arch)
+      tags: always
+      pacman: update_cache=yes
+      changed_when: False
+      # when: ansible_distribution == "Archlinux"
+      when: ansible_distribution in ["Archlinux", "ArtixLinux"]
+
+    - name: pre-run | update package cache (voidlinux)
+      tags: always
+      community.general.xbps: update_cache=yes
+      # install ansible-galaxy collection install community.general.xbps
+      changed_when: False
+      when: ansible_distribution == "void"
+
+    - name: pre-run | update package cache (debian, etc)
+      tags: always
+      apt: update_cache=yes
+      changed_when: False
+      when: ansible_distribution in ["Debian", "Ubuntu"]
+
+  tasks:
+    - name: Install Arch Base Packages
+      package: # generic package for the desired distribution
+        name:
+          - base
+          - base-devel
+          - linux-lts
+          - linux-lts-headers
+          - linux-firmware
+          - "{{ dropbear }}" # package name as variable
+          - git
+          - nano
+          - neovim
+          - intel-ucode
+          - fzf
+          - duf
+          - reflector
+          - mtools
+          - dosfstools
+          - btrfs-progs
+          - pacman-contrib
+        state: latest
+      when: ansible_distribution == "ArchLinux"
+
+    - name: install desktop packages
+      community.general.xbps:
+        name:
+          - sway # wayland wm and compositor
+          - swaybg # background manager for sway
+          - non-existent-package
+          - xorg-server-xwayland # xorg backend for wayland
+          - Waybar # bar for sway
+          - mako # notification daemon
+
+    - name: copy wallpaper file
+      copy:
+        src: files/wallpaper.png
+        dest: /usr/share/backgrounds/ansible-wallpaper
+        owner: root
+        group: root
+
+    - name: set wallpaper # debian example
+      become_user: junior
+      dconf: # need packages dconf-cli and python3-psutil
+        key: "/org/gnome/desktop/background/picture-uri"
+        value: "'file:///usr/share/backgrounds/ansible/wallpaper.png'"
+
+    - name: set wallpaper # debian example
+      become_user: junior
+      dconf:
+        key: "/org/gnome/desktop/background/picture-options"
+        value: "'zoom'"
+
+    # Copying files to env example
+    - name: copy .bashrc file
+      copy:
+        src: files/bashrc
+        dest: /home/$USER/.bashrc
+        owner: $USER
+        group: $USER
+
+    # User that can run ansible, in any change on script automatically
+    - name: add ansible user
+      user:
+        name: ansibler
+        system: yes
+
+    - name: set up sudo for ansible user
+      copy:
+        src: files/sudoer_ansibler
+        dest: /etc/sudoes.d/ansibler
+        owner: root
+        group: root
+        mode: 0440
+
+    # Enable and autostart services
+    - name: start and enable zram service
+      tags: services
+      service:
+        name: zramd
+        state: started # start the service
+        enabled: yes # enable the service for autostart
+      when: ansible_distribution == "ArchLinux"
+
+    - name: restart and change a file from service
+      tags: services
+      lineinfile:
+        path: /etc/default/zramd
+        regexp: "^MAX_RAM_SIZE"
+        line: MAX_RAM_SIZE=100
+      when: ansible_distribution == "ArchLinux"
+      register: zram # capture the state in a variable
+
+    # If the file changed, it restarts the service
+    - name: restart zramd (Arch)
+      tags: services
+      service:
+        name: zramd
+        state: restarted
+      when: zramd.changed
+
+    # Set cron job automatically
+    - name: add ansible-pull cron job
+      cron:
+        name: ansible auto-provision
+        user: ansibler
+        minute: "*/10"
+        job: ansible-pull -o -U https://github.com/$USER/ansible_project.git
+        # check cron job for that user: sudo crontab -u ansibler -l
+
+- hosts: all
+  become: true
+  tasks:
+    - name: create ansibler user
+      tags: always
+      user:
+        name: ansibler
+        groups: root
+
+    - name: add ssh key for ansibler
+      tags: always
+      authorized_key:
+        user: ansibler
+        key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFMsPUaC1BRZaCYL9gbydFaKxdLCUEvRvaF9gWEf+hKB ansible"
+
+    - name: add sudoers file for ansibler
+      tags:
+      copy:
+        src: files/sudoer_ansibler
+        dest: /etc/sudoes.d/ansibler
+        owner: root
+        group: root
