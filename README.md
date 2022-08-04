@@ -16,6 +16,17 @@ ansible all --key-file ~/.ssh/ansible -i hosts -m ping
 ansible all -m ping
 ```
 
+## Run command as **nobody**
+
+```command
+- name: Run a command as nobody
+  command: somecommand
+  become: yes
+  become_method: su
+  become_user: nobody
+  become_flags: '-s /bin/sh'
+```
+
 ```list
 ansible all --list-hosts
 ansible all -m gather_facts

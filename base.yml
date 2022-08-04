@@ -114,6 +114,8 @@
         regexp: "^MAX_RAM_SIZE"
         line: MAX_RAM_SIZE=100
       when: ansible_distribution == "ArchLinux"
+      # when: ansible_product_name == "Nitro AN515-52"
+      # VM=Standard PC (Q35 + ICH9, 2009)
       register: zram # capture the state in a variable
 
     # If the file changed, it restarts the service
