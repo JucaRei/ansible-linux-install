@@ -24,9 +24,16 @@
 [localhost]
 localhost ansible_connection=local
 
-[Macs]
-# 192.168.1.222
-# 192.168.1.221
+[Oldmac]
+# 192.168.1.76
 
+[Macmom]
+# 192.168.1.231
 [Nitro]
 # 192.168.1.35
+
+[Dietpi]
+# 192.168.1.200
+
+[Dlink_Oldnas]
+# 192.168.1.207

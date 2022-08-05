@@ -1,48 +1,48 @@
 - name: Install Arch Base Packages
   chroot:
-    package: # generic package for the desired distribution
-      name:
-        - base
-        - base-devel
-        - linux-lts
-        - linux-lts-headers
-        - linux-firmware
-        # - "{{ dropbear }}" # package name as variable
-        - dropbear
-        - git
-        - ansible
-        - nano
-        - neovim
-        - intel-ucode
-        - fzf
-        - duf
-        - reflector
-        - mtools
-        - dosfstools
-        - btrfs-progs
-        - pacman-contrib
-      state: latest
+      package: # generic package for the desired distribution
+          name:
+              - base
+              - base-devel
+              - linux-lts
+              - linux-lts-headers
+              - linux-firmware
+              # - "{{ dropbear }}" # package name as variable
+              - dropbear
+              - git
+              - ansible
+              - nano
+              - neovim
+              - intel-ucode
+              - fzf
+              - duf
+              - reflector
+              - mtools
+              - dosfstools
+              - btrfs-progs
+              - pacman-contrib
+          state: latest
   when: ansible_distribution == "ArchLinux"
 
 - name: Remove some default packages
   chroot:
-    package:
-      name:
-        - linux
-        - linux-headers
-        - openssh
-      state: absent
-    when: ansible_distribution == "ArchLinux"
+      package:
+          name:
+              - linux
+              - linux-headers
+              - openssh
+          state: absent
+      when: ansible_distribution == "ArchLinux"
 
 - name: Install Base packages on VoidLinux
   chroot:
-    community.general.xbps:
-      name:
-        - sway # wayland wm and compositor
-        - swaybg # background manager for sway
-        - non-existent-package
-        - xorg-server-xwayland # xorg backend for wayland
-        - Waybar # bar for sway
-        - mako # notification daemon
-      state: latest
+      community.general.xbps:
+          name:
+              - sway # wayland wm and compositor
+              - swaybg # background manager for sway
+              - non-existent-package
+              - xorg-server-xwayland # xorg backend for wayland
+              - Waybar # bar for sway
+              - mako # notification daemon
+          state: latest
   when: ansible_distribution == "void"
