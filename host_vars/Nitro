@@ -1,0 +1,2 @@
+ssh_users: "juca junior ansibler"
+ssh_template_file: ssh_config_arch.j2

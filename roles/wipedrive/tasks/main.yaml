@@ -1,0 +1,16 @@
+- name: add ssh key for ansibler
+  tags: always
+  authorized_key:
+    user: ansibler
+    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFMsPUaC1BRZaCYL9gbydFaKxdLCUEvRvaF9gWEf+hKB ansible"
+
+- name: generate sshd_config file from template
+  tags: ssh
+  template:
+    src: "{{ ssh_template_file }}"
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart_sshd
+  when: ansible_os_family in ["Archlinux", "ArtixLinux"]
