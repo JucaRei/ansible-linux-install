@@ -1,0 +1,89 @@
+- name: Wipe install drive and all its partitions
+  # command: find /dev -wholename "{{ install_drive }}*" -exec wipefs --force --all {} \;
+  command: find /dev -wholename "/dev/vda" -exec wipefs --force --all {} \;
+  tags:
+    - wipefs
+
+- name: Create boot partition
+  tags: mkpartition
+  parted:
+    # device: "{{ install_drive }}"
+    device: /dev/vda
+    label: gpt
+    number: 1
+    part_end: 200MB
+    name: "ArchBoot"
+    flags: [boot, esp]
+    state: present
+
+- name: Create multiple directories in a loop for subvolumes
+  tags: mkpartition
+  file:
+    path: "/mnt/{{ item }}"
+    state: directory
+    loop:
+      - .snapshots
+      - home
+      - var
+
+- name: Create multiple directories in a loop for subvolumes var
+  tags: mkpartition
+  file:
+    path: "/mnt/var/{{ item }}"
+    state: directory
+    loop:
+      - log
+      - cache
+
+- name: Create Root partition
+  tags: mkpartition
+  parted:
+    # device: "{{ install_drive }}"
+    device: /dev/vda
+    label: gpt
+    number: 2
+    part_end: 6.6GB
+    name: ArchBoot
+    flags: [boot, esp]
+    state: present
+
+- name: Create EFI boot Partition
+  tags: mkpartition
+  parted:
+    device: /dev/vda
+    number: 1
+    state: present
+    # part_start: 2MiB
+    part_end: 200MB
+
+- name: Format the Disk for
+  tags: mkpartition
+  filesystem:
+    fstype: vfat
+    dev: /dev/vda1
+    opts: defaults,noatime,nodiratime
+    # opts: noatime,ssd,compress-force=zstd:16,space_cache=v2,commit=120,autodefrag,discard=async
+
+- name: Create Root Partition
+  tags: mkpartition
+  parted:
+    device: /dev/vda
+    number: 2
+    state: present
+    part_start: 201MB
+    parted:
+
+- name: Create EFI directory
+  tags: mkpartition
+  file:
+    path: /mnt/boot/efi
+    state: directory
+    mode: "0755"
+
+- name: Mount Partition
+  tags: mkpartition
+  mount:
+    path: /mnt/vda1
+    src: /dev/vda1
+    fstype: vfat
+    state: mounted

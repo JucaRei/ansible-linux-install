@@ -1,62 +1,35 @@
-- name: Create Partitions for Arch, Artix and VoidLinux
-  hosts: localhost
-  remote_user: ansibler
+- name: Create Partitions for Arch, Artix and VoidLinux (all hosts)
+  # hosts: localhost
+  # hosts: all
+  hosts: "*"
+  # remote_user: ansibler
   become: true
   # become_user: root
   pre_tasks:
-    - name: pre-run | update package cache (arch)
+    - name: Gathering facts ...
+      gather_facts: yes
       tags: always
-      pacman: update_cache=yes
-      changed_when: False
-      # when: ansible_distribution == "Archlinux"
-      when: ansible_distribution in ["Archlinux", "ArtixLinux"]
-    - name: Synchronize clock via NTP
-      command: timedatectl set-ntp true
-      tags:
-        - sync_clock
 
+  # Virtual Machine
   tasks:
     block:
-      - name: Wipe install drive and all its partitions
-        # command: find /dev -wholename "{{ install_drive }}*" -exec wipefs --force --all {} \;
-        command: find /dev -wholename "/dev/vda" -exec wipefs --force --all {} \;
-        tags:
-          - wipefs
-      - name: Create boot partition
-        parted:
-          # device: "{{ install_drive }}"
-          device: /dev/vda
-          label: gpt
-          number: 1
-          part_end: 200MB
-          name: boot
-          flags: [boot, esp]
-          state: present
+      - import_tasks: vm.yaml
+        tags: wipefs, mkpartition
+        when: ansible_product_name == "VM=Standard PC (Q35 + ICH9, 2009)"
 
-      - name: Create EFI boot Partition
-        parted:
-          device: /dev/vda
-          number: 1
-          state: present
-          # part_start: 2MiB
-          part_end: 200MB
+      - import_tasks: nitro.yaml
+        tags: wipefs, mkpartition
+        when: ansible_product_name == "Nitro AN515-52"
 
-      - name: Format the Disk for EFI
-        filesystem:
-          fstype: vfat
-          dev: /dev/vda1
-          opts: defaults,noatime,nodiratime
-          # opts: noatime,ssd,compress-force=zstd:16,space_cache=v2,commit=120,autodefrag,discard=async
+      - import_tasks: raspberry.yaml
+        tags: wipefs, mkpartition
+        when: ansible_product_name == "NA"
+        # when: ansible_nodename == "Dietpi"
 
-      - name: Create EFI directory
-        file:
-          path: /mnt/boot/efi
-          state: directory
-          mode: "0755"
+      - import_tasks: macmom.yaml
+        tags: wipefs, mkpartition
+        when: ansible_product_name == "MacBookAir4,1"
 
-      - name: Mount Partition
-        mount:
-          path: /mnt/vda1
-          src: /dev/vda1
-          fstype: vfat
-          state: mounted
+      - import_tasks: oldmac.yaml
+        tags: wipefs, mkpartition
+        when: ansible_product_name == "MacbookPro4,1"
