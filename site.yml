@@ -4,14 +4,14 @@
   # - hosts: localhost
   # connection: local
   # gather_facts: true
-  connection: hosts
+  connection: hosts.ini
   become: true # enable sudo
   pre_tasks:
     - name: pre-run | update package cache (arch)
       tags: always
       pacman:
         update_cache: yes
-        update_only: yes
+        # update_only: yes
       changed_when: False
       # when: ansible_distribution == "Archlinux"
       when: ansible_distribution in ["Archlinux", "ArtixLinux"]
@@ -26,7 +26,7 @@
       tags: always
       community.general.xbps:
         update_cache: yes
-        update_only: yes
+        # update_only: yes
       # install ansible-galaxy collection install community.general.xbps
       changed_when: False
       when: ansible_distribution == "void"
@@ -48,10 +48,23 @@
       changed_when: False
       when: ansible_distribution in ["Debian", "Ubuntu"]
 
-    # - name: install python 3 if needed
-    # tags: always
-    # raw: test -e /usr/bin/python || (pacman -Sy python --noconfirm)
-    # changed_when: false
+    - name: install python 3 if needed (Arch or Artix)
+      tags: always
+      raw: test -e /usr/bin/python || (pacman -Sy python --noconfirm)
+      changed_when: false
+      when: ansible_distribution in ["Archlinux", "ArtixLinux"]
+
+    - name: install python 3 if needed (VoidLinux)
+      tags: always
+      raw: test -e /usr/bin/python || (xbps -Sy python3 --yes)
+      changed_when: false
+      when: ansible_distribution == "void"
+
+    - name: install python 3 if needed (Debian, Ubuntu, etc)
+      tags: always
+      raw: test -e /usr/bin/python || (apt-get -y install python3 )
+      changed_when: false
+      when: ansible_distribution in ["Debian", "Ubuntu"]
 
 - hosts: localhost
   become: true

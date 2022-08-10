@@ -4,6 +4,20 @@
 sudo ansible-pull -U https://github.com/$USER/ansible_project.git
 ```
 
+## Install on one host some module with sudo example **-b**
+
+```sudo
+ansible -i hosts oldmac -m xbps -a "name=cmatrix state=present" -b
+```
+
+Argument **-a**
+
+## Ask password and install on one host some module with sudo example **-k**
+
+```sudo
+ansible -i hosts oldmac -m xbps -a "name=cmatrix state=present" -b -k
+```
+
 ```ssh
 ansible all --key-file ~/.ssh/ansible -i inventory -m ping
 --------------------------
