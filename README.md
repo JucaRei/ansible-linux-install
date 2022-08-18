@@ -199,4 +199,19 @@ ansible-playbook --tags "parted,base" --ask-become-pass site.yml
   "uuid": "N/A"
 }
 
-``
+```chroot
+ansible -m setup localhost -a 'filter=ansible_is_chroot'
+```
+
+```env
+ansible localhost -m setup -a 'filter=ansible_env'
+```
+
+```device
+ansible localhost -m gather_facts -a 'filter=ansible_form_factor'
+```
+
+```Symanager
+# Systemd | RUNIT | ETC
+ansible localhost -m gather_facts -a 'filter=ansible_service_mgr'
+```

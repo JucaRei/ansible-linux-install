@@ -16,6 +16,15 @@
     flags: [boot, esp]
     state: present
 
+- name: Create root partition
+  tags: mkpartition
+  parted:
+    device: "{{ install_drive }}"
+    label: gpt
+    number: 2
+    part_start: 200MB
+    name:
+
 - name: Create multiple directories in a loop for subvolumes
   tags: mkpartition
   file:
@@ -24,7 +33,8 @@
     loop:
       - .snapshots
       - home
-      - var
+      # - var/cache
+      # - var/tmp
 
 - name: Create multiple directories in a loop for subvolumes var
   tags: mkpartition
@@ -70,7 +80,7 @@
     device: /dev/vda
     number: 2
     state: present
-    part_start: 201MB
+    part_start: 200MB
     parted:
 
 - name: Create EFI directory

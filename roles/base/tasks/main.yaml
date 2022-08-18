@@ -34,6 +34,17 @@
           state: absent
   when: ansible_distribution == "ArchLinux"
 
+# Aur - ansible-galaxy collection install kewlfft.aur
+- name: Install aur with ansible-aur
+  user: name=aur_builder
+  lineinfile:
+      path: /etc/sudoers.d/aur_builder-allow-to-sudo-pacman
+      state: present
+      line: "aur_builder ALL=(ALL) NOPASSWD: /usr/bin/pacman"
+      validate: /usr/sbin/visudo -cf %s
+      create: yes
+
+##### VOID LINUX
 - name: Install Base packages on VoidLinux
   community.general.chroot:
       community.general.xbps:
