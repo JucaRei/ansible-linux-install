@@ -1,27 +1,8 @@
 - name: Install Arch Base Packages
   community.general.chroot:
       package: # generic package for the desired distribution
-          name:
-              - base
-              - base-devel
-              - linux-lts
-              - linux-lts-headers
-              - linux-firmware
-              # - "{{ dropbear }}" # package name as variable
-              - dropbear
-              - git
-              - ansible
-              - nano
-              - neovim
-              - intel-ucode
-              - fzf
-              - duf
-              - reflector
-              - mtools
-              - dosfstools
-              - btrfs-progs
-              - pacman-contrib
-          state: latest
+          name: "{{ base_arch }}"
+  state: latest
   when: ansible_distribution == "ArchLinux"
 
 - name: Remove some default packages

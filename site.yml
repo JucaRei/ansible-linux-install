@@ -58,7 +58,7 @@
       tags: always
       raw: test -e /usr/bin/python || (xbps -Sy python3 --yes)
       changed_when: false
-      when: ansible_distribution == "void"
+      when: ansible_distribution == "Void"
 
     - name: install python 3 if needed (Debian, Ubuntu, etc)
       tags: always
